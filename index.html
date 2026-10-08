@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="color-scheme" content="dark">
+<meta name="theme-color" content="#0b1020">
+<title>English Launcher — Liquid Glass</title>
+<!-- Logo: assets/logo.png. Kolejność ma znaczenie — przeglądarka bierze
+     ostatnią ikonę, którą potrafi wczytać, więc PNG wygrywa, a SVG
+     zostaje jako awaryjny fallback. -->
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%234aa8ff'/%3E%3Cstop offset='.6' stop-color='%238b7cff'/%3E%3Cstop offset='1' stop-color='%23ff6a9a'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='64' height='64' rx='15' fill='url(%23g)'/%3E%3Ctext x='32' y='44' font-family='Verdana,sans-serif' font-size='30' font-weight='bold' fill='white' text-anchor='middle'%3EEn%3C/text%3E%3C/svg%3E">
+<link rel="icon" href="assets/logo.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- Liquid glass — refrakcja i dyspersja światła -->
+<svg class="svg-defs" aria-hidden="true" focusable="false">
+  <defs>
+    <filter id="glass-distortion" x="-20%" y="-20%" width="140%" height="140%" color-interpolation-filters="sRGB">
+      <feTurbulence type="fractalNoise" baseFrequency="0.008 0.012" numOctaves="2" seed="7" result="noise">
+        <animate attributeName="baseFrequency"
+                 values="0.008 0.012; 0.012 0.008; 0.008 0.012"
+                 dur="14s" repeatCount="indefinite"/>
+      </feTurbulence>
+      <feGaussianBlur in="noise" stdDeviation="2" result="softNoise"/>
+      <feDisplacementMap in="SourceGraphic" in2="softNoise" scale="22" xChannelSelector="R" yChannelSelector="G"/>
+    </filter>
+  </defs>
+</svg>
+
+<div class="scene" aria-hidden="true">
+  <div class="blob blob--1"></div>
+  <div class="blob blob--2"></div>
+  <div class="blob blob--3"></div>
+  <div class="blob blob--4"></div>
+  <div class="grain"></div>
+</div>
+
+<main class="launcher glass">
+  <div class="launcher__glow" aria-hidden="true"></div>
+
+  <header class="launcher__head">
+    <div class="brand">
+      <div class="brand__mark">
+        <span class="brand__mark__txt" aria-hidden="true">En</span>
+        <img class="brand__logo" src="assets/logo.png" alt="" decoding="async"
+             onerror="this.remove()">
+      </div>
+      <div class="brand__text">
+        <h1>English Launcher</h1>
+        <p class="brand__sub">słownik z formami nieregularnymi</p>
+      </div>
+    </div>
+
+    <div class="head-actions">
+      <button class="pill" id="favsBtn" type="button" aria-pressed="false" title="Pokaż tylko ulubione">
+        <svg viewBox="0 0 24 24" class="ico" aria-hidden="true"><path d="M12 3.6l2.5 5.2 5.7.8-4.1 4 1 5.7-5.1-2.7-5.1 2.7 1-5.7-4.1-4 5.7-.8z"/></svg>
+        <span>Ulubione</span>
+        <span class="pill__count" id="favCount">0</span>
+      </button>
+      <button class="pill" id="randomBtn" type="button" title="Losowe słowo">
+        <svg viewBox="0 0 24 24" class="ico" aria-hidden="true"><path d="M4 7h3.2l3 5m0 0l3-5H20M4 17h3.2l9-10M14 14h6"/><circle cx="17.5" cy="17" r="2.2"/><circle cx="17.5" cy="7" r="2.2"/></svg>
+        <span>Losuj</span>
+      </button>
+      <button class="pill pill--accent" id="addBtn" type="button" title="Dodaj własne słowo">
+        <svg viewBox="0 0 24 24" class="ico" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+        <span>Dodaj</span>
+      </button>
+    </div>
+  </header>
+
+  <section class="searchbar glass glass--inner">
+    <svg viewBox="0 0 24 24" class="ico searchbar__ico" aria-hidden="true"><circle cx="11" cy="11" r="6.4"/><path d="M16 16l4.2 4.2"/></svg>
+    <input id="search" type="search" autocomplete="off" spellcheck="false"
+           placeholder="Szukaj słowa, formy (went, children) lub znaczenia…"
+           aria-label="Wyszukiwarka słów">
+    <button class="icon-btn" id="clearSearch" type="button" title="Wyczyść" hidden>
+      <svg viewBox="0 0 24 24" class="ico" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
+      <span class="sr-only">Wyczyść wyszukiwanie</span>
+    </button>
+    <kbd class="searchbar__kbd">/</kbd>
+  </section>
+
+  <section class="filters" aria-label="Filtry">
+    <div class="chips" id="posChips" role="group" aria-label="Część mowy"></div>
+    <div class="chips chips--right" id="tierChips" role="group" aria-label="Częstotliwość"></div>
+    <label class="switch" title="Tylko słowa z formami nieregularnymi">
+      <input type="checkbox" id="irrOnly">
+      <span class="switch__track"><span class="switch__knob"></span></span>
+      <span class="switch__label">tylko nieregularne</span>
+    </label>
+  </section>
+
+  <section class="results">
+    <div class="results__bar">
+      <h2 id="sectionTitle">Wszystkie słowa</h2>
+      <span class="results__count" id="resultCount">0 słów</span>
+    </div>
+
+    <ul class="grid" id="grid" role="list"></ul>
+
+    <div class="empty glass glass--inner" id="emptyBox" hidden>
+      <p class="empty__title" id="emptyTitle">Nic nie znaleziono</p>
+      <p class="empty__text" id="emptyText">Spróbuj innej pisowni albo sprawdź słowo w dictionaryapi.dev.</p>
+      <button class="pill pill--accent" id="emptyLookup" type="button">Pobierz słowo z internetu</button>
+    </div>
+
+    <p class="looking glass glass--inner" id="lookingBox" hidden>
+      <span class="looking__dot"></span> Pobieram dane z dictionaryapi.dev…
+    </p>
+  </section>
+
+  <footer class="launcher__foot">
+    <span class="stat" id="statTotal">—</span>
+    <span class="stat" id="statIrr">—</span>
+    <span class="stat stat--net" id="statNet">offline</span>
+    <span class="hint"><kbd>↑</kbd><kbd>↓</kbd> nawigacja · <kbd>Enter</kbd> otwórz · <kbd>Esc</kbd> zamknij</span>
+  </footer>
+</main>
+
+<nav class="rail glass" id="rail" aria-label="Skrót do litery"></nav>
+
+<!-- ============ SZCZEGÓŁY SŁOWA ============ -->
+<section class="detail glass" id="detail" aria-modal="true" role="dialog" aria-labelledby="detailWord" hidden>
+  <div class="detail__glow" aria-hidden="true"></div>
+
+  <header class="detail__head">
+    <div class="detail__id">
+      <h2 id="detailWord">—</h2>
+      <div class="detail__meta">
+        <span class="phon" id="detailIpa"></span>
+        <button class="icon-btn" id="speakWord" type="button" title="Wymów słowo">
+          <svg viewBox="0 0 24 24" class="ico" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9H4z"/><path d="M16.5 8.5a5 5 0 0 1 0 7"/></svg>
+          <span class="sr-only">Wymów słowo</span>
+        </button>
+        <span class="badge" id="detailPos"></span>
+        <span class="badge badge--warn" id="detailIrr" hidden>nieregularne</span>
+      </div>
+      <p class="detail__pl" id="detailPl"></p>
+    </div>
+
+    <div class="detail__tools">
+      <button class="icon-btn icon-btn--star" id="detailStar" type="button" aria-pressed="false" title="Ulubione">
+        <svg viewBox="0 0 24 24" class="ico ico--fill" aria-hidden="true"><path d="M12 3.6l2.5 5.2 5.7.8-4.1 4 1 5.7-5.1-2.7-5.1 2.7 1-5.7-4.1-4 5.7-.8z"/></svg>
+        <span class="sr-only">Dodaj do ulubionych</span>
+      </button>
+      <button class="icon-btn" id="detailClose" type="button" title="Zamknij (Esc)">
+        <svg viewBox="0 0 24 24" class="ico" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
+        <span class="sr-only">Zamknij szczegóły</span>
+      </button>
+    </div>
+  </header>
+
+  <div class="detail__body" id="detailBody"></div>
+</section>
+
+<!-- ============ DODAWANIE WŁASNEGO SŁOWA ============ -->
+<section class="modal glass" id="addModal" aria-modal="true" role="dialog" aria-labelledby="addTitle" hidden>
+  <div class="modal__glow" aria-hidden="true"></div>
+  <header class="modal__head">
+    <h2 id="addTitle">Dodaj własne słowo</h2>
+    <button class="icon-btn" id="addClose" type="button" title="Zamknij">
+      <svg viewBox="0 0 24 24" class="ico" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
+      <span class="sr-only">Zamknij</span>
+    </button>
+  </header>
+
+  <form class="form" id="addForm">
+    <label class="field">
+      <span>Słowo (angielski)</span>
+      <input name="word" required placeholder="np. run" autocomplete="off" spellcheck="false">
+    </label>
+
+    <div class="field-row">
+      <label class="field">
+        <span>Część mowy</span>
+        <select name="pos">
+          <option value="noun">noun — rzeczownik</option>
+          <option value="verb">verb — czasownik</option>
+          <option value="adjective">adjective — przymiotnik</option>
+          <option value="adverb">adverb — przysłówek</option>
+          <option value="phrase">phrase — zwrot</option>
+        </select>
+      </label>
+      <label class="field">
+        <span>Wymowa (IPA)</span>
+        <input name="ipa" placeholder="np. rʌn" autocomplete="off">
+      </label>
+    </div>
+
+    <label class="field">
+      <span>Tłumaczenie PL</span>
+      <input name="pl" required placeholder="np. biegać" autocomplete="off">
+    </label>
+
+    <div class="field-row" id="verbForms">
+      <label class="field"><span>Past</span><input name="past" placeholder="ran"></label>
+      <label class="field"><span>Past participle</span><input name="pp" placeholder="run"></label>
+      <label class="field"><span>Plural / 3 os.</span><input name="alt" placeholder="runs / runs"></label>
+    </div>
+
+    <label class="field">
+      <span>Przykład użycia</span>
+      <input name="ex" placeholder="np. She runs every morning." autocomplete="off">
+    </label>
+
+    <footer class="form__foot">
+      <button class="pill" type="button" id="addCancel">Anuluj</button>
+      <button class="pill pill--accent" type="submit">Zapisz słówko</button>
+    </footer>
+  </form>
+</section>
+
+<div class="scrim" id="scrim" hidden></div>
+
+<script src="data/lexicon.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,12 @@
+W tym folderze wrzuć logo launchera.
+
+Nazwa pliku musi być dokładnie:
+
+    logo.png
+
+Podpowiedzi:
+- kwadratowy kadr (Ten Portret ma 499x499 — idealny), najlepiej 256x256 lub 512x512
+- jeśli masz JPG, zmień w index.html `assets/logo.png` na `assets/logo.jpg`
+- plik jest używany też jako favicon karty przeglądarki
+
+Bez tego pliku launcher pokazuje gradientowy znaczek "En" (fallback).
